@@ -382,7 +382,10 @@ static const luaL_Reg zlib_functions[] = {
 #define SETLITERAL(n,v) (lua_pushliteral(L, n), lua_pushliteral(L, v), lua_settable(L, -3))
 #define SETINT(n,v) (lua_pushliteral(L, n), lua_pushinteger(L, v), lua_settable(L, -3))
 
-LUALIB_API int luaopen_zlib(lua_State * const L) {
+#if defined(LUA_ZLIB_EXPORT) && defined(_WIN32)
+__declspec(dllexport)
+#endif
+int luaopen_zlib(lua_State * const L) {
     lz_create_deflate_mt(L);
     lz_create_inflate_mt(L);
 
@@ -393,7 +396,7 @@ LUALIB_API int luaopen_zlib(lua_State * const L) {
 
     SETLITERAL("_COPYRIGHT", "Copyright (c) 2009-2010 Brian Maher");
     SETLITERAL("_DESCRIPTION", "Yet another binding to the zlib library");
-    SETLITERAL("_VERSION", "lua-zlib $Id$ $Format:%d$");
+    SETLITERAL("_VERSION", "lua-zlib $Id$  (tag: v0.5)");
 
     /* Expose this to lua so we can do a test: */
     SETINT("_TEST_BUFSIZ", LUAL_BUFFERSIZE);
