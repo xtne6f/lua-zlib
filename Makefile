@@ -26,8 +26,21 @@ MAC_LDFLAGS = -bundle -undefined dynamic_lookup -fPIC $(LIBDIR)
 
 CC = gcc
 LD = $(MYENV) gcc
+RM = rm -f
 CFLAGS  = $(MYCFLAGS)
 LDFLAGS = $(MYLDFLAGS)
+
+ZLIB_OBJS = zlib1__adler32.o zlib1__compress.o zlib1__crc32.o zlib1__deflate.o zlib1__infback.o zlib1__inffast.o zlib1__inflate.o zlib1__inftrees.o zlib1__trees.o zlib1__uncompr.o zlib1__zutil.o
+
+# for DLL build
+ifeq ($(MAKECMDGOALS),zlib52.dll)
+  MYCFLAGS  = -O2 $(WARN)
+  DEFS      = -DLUA_ZLIB_EXPORT -D_WINDOWS -D_UNICODE -DUNICODE -DNDEBUG
+  INCDIR    = -I.
+  MYLDFLAGS = -Wl,-s,--dynamicbase,--nxcompat
+  LIBDIR    = -L.
+  LIBS      = -llua52-mingw-$(or $(MSYSTEM_CARCH),$(findstring x86_64,$(MAKE_HOST)),i686)
+endif
 
 .PHONY: all clean install none linux bsd macosx
 
@@ -36,6 +49,7 @@ all:
 	@echo "  * linux"
 	@echo "  * bsd"
 	@echo "  * macosx"
+	@echo "  * zlib52.dll"
 
 install: $(CMOD)
 	cp $(CMOD) $(LUACPATH)
@@ -53,10 +67,16 @@ macosx:
 	@$(MAKE) $(CMOD) MYCFLAGS="$(MAC_CFLAGS)" MYLDFLAGS="$(MAC_LDFLAGS)" MYENV="$(MAC_ENV)" INCDIR="$(INCDIR)" LIBDIR="$(LIBDIR)" DEFS="$(DEFS)"
 
 clean:
-	rm -f $(OBJS) $(CMOD)
+	$(RM) $(OBJS) $(CMOD) $(ZLIB_OBJS) zlib52.dll
+
+zlib1__%.o: zlib1/%.c
+	$(CC) -c $(CFLAGS) $(DEFS) $(INCDIR) -o $@ $<
 
 .c.o:
 	$(CC) -c $(CFLAGS) $(DEFS) $(INCDIR) -o $@ $<
 
 $(CMOD): $(OBJS)
 	$(LD) $(LDFLAGS) $(LIBDIR) $(OBJS) $(LIBS) -o $@
+
+zlib52.dll: $(OBJS) $(ZLIB_OBJS)
+	$(LD) $(LDFLAGS) -shared $(LIBDIR) $^ $(LIBS) -o $@
