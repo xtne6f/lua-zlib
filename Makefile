@@ -37,7 +37,7 @@ ifeq ($(MAKECMDGOALS),zlib52.dll)
   MYCFLAGS  = -O2 $(WARN)
   DEFS      = -DLUA_ZLIB_EXPORT -D_WINDOWS -D_UNICODE -DUNICODE -DNDEBUG
   INCDIR    = -I. -I./zlib1
-  MYLDFLAGS = -Wl,-s,--dynamicbase,--nxcompat
+  MYLDFLAGS = -Wl,-s,--dynamicbase,--nxcompat -static-libgcc
   LIBDIR    = -L.
   LIBS      = -llua52-mingw-$(or $(MSYSTEM_CARCH),$(findstring x86_64,$(MAKE_HOST)),i686)
 endif
